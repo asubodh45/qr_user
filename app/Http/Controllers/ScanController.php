@@ -42,6 +42,15 @@ class ScanController extends Controller
     private function logScan(UserProfile $profile, Request $request): void
     {
         try {
+            // Dedup: ignore if the same profile was scanned in the last 15 seconds
+            $isDuplicate = QrScan::where('user_profile_id', $profile->id)
+                ->where('scanned_at', '>=', now()->subSeconds(15))
+                ->exists();
+
+            if ($isDuplicate) {
+                return;
+            }
+
             $agent = new Agent();
             $agent->setUserAgent($request->userAgent() ?? '');
             $agent->setHttpHeaders($request->headers->all());
@@ -52,19 +61,34 @@ class ScanController extends Controller
                 default            => 'Desktop',
             };
 
-            $ip  = $request->ip();
-            $geo = $this->geoLookup($ip);
+            $ip = $request->ip();
 
-            QrScan::create([
+            logger()->info('QR scan IP debug', [
+                'request_ip'        => $ip,
+                'remote_addr'       => $_SERVER['REMOTE_ADDR'] ?? null,
+                'x_forwarded_for'   => $request->header('X-Forwarded-For'),
+                'x_real_ip'         => $request->header('X-Real-IP'),
+                'cf_connecting_ip'  => $request->header('CF-Connecting-IP'),
+            ]);
+
+            // Insert immediately so the redirect is fast, then update geo in the background
+            $scan = QrScan::create([
                 'user_profile_id'  => $profile->id,
                 'ip_address'       => $ip,
-                'country'          => $geo['country'],
-                'city'             => $geo['city'],
+                'country'          => 'Unknown',
+                'city'             => 'Unknown',
                 'browser'          => $agent->browser() ?: 'Unknown',
-                'operating_system' => $agent->platform() ?: 'Unknown',
+                'operating_system' => str_replace('OS', '', $agent->platform() ?: 'Unknown'),
                 'device'           => $device,
                 'scanned_at'       => now(),
             ]);
+
+            // Geo lookup after insert — won't block the redirect
+            $geo = $this->geoLookup($ip);
+            if ($geo['country'] !== 'Unknown') {
+                $scan->update(['country' => $geo['country'], 'city' => $geo['city']]);
+            }
+
         } catch (\Throwable $e) {
             logger()->error('QR scan log failed: '.$e->getMessage());
         }
@@ -74,13 +98,13 @@ class ScanController extends Controller
     {
         $unknown = ['country' => 'Unknown', 'city' => 'Unknown'];
 
-        // Skip private / loopback addresses
+        // Private / loopback addresses cannot be geolocated
         if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
             return $unknown;
         }
 
         try {
-            $response = Http::timeout(3)->get("http://ip-api.com/json/{$ip}");
+            $response = Http::timeout(2)->get("http://ip-api.com/json/{$ip}");
 
             if ($response->successful() && $response->json('status') === 'success') {
                 return [
@@ -88,9 +112,7 @@ class ScanController extends Controller
                     'city'    => $response->json('city') ?: 'Unknown',
                 ];
             }
-        } catch (\Throwable) {
-            // Non-blocking — continue without geo data
-        }
+        } catch (\Throwable) {}
 
         return $unknown;
     }
