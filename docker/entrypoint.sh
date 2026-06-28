@@ -46,6 +46,9 @@ cd /var/www/html
 php artisan migrate --force --no-interaction
 echo "[entrypoint] Migrations complete."
 
+php artisan db:seed --class=AdminSeeder --force --no-interaction
+echo "[entrypoint] Seeder complete."
+
 # Storage symlink — ignore error if symlink already exists (Render Disk scenario)
 php artisan storage:link --force 2>/dev/null || true
 echo "[entrypoint] Storage link ready."
