@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ScanController;
 use Illuminate\Support\Facades\Route;
@@ -14,8 +15,8 @@ Route::get('/profile/{uuid}', [ScanController::class, 'profile'])->name('profile
 
 // ─── Admin routes (auth required) ───────────────────────────────────────────
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', fn() => redirect()->route('admin.users.index'))->name('home');
-    Route::get('/dashboard', fn() => redirect()->route('admin.users.index'))->name('dashboard');
+    Route::get('/', fn () => redirect()->route('admin.dashboard'))->name('home');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', UserController::class)->parameters(['users' => 'user_profile']);
 });
 

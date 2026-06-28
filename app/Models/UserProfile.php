@@ -36,4 +36,9 @@ class UserProfile extends Model
     {
         return $this->hasOne(UserImage::class)->where('is_profile', true);
     }
+
+    public function scans(): HasMany
+    {
+        return $this->hasMany(QrScan::class);
+    }
 }
