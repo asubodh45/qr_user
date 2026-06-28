@@ -1,0 +1,58 @@
+services:
+  - type: web
+    name: qr-employee
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /login
+    autoDeploy: true
+
+    # ── Render Disk for persistent file uploads ──────────────────────────────
+    disk:
+      name: qr-employee-storage
+      mountPath: /var/www/html/storage/app/public
+      sizeGB: 5
+
+    # ── Environment variables ─────────────────────────────────────────────────
+    # Set secrets (APP_KEY, DB_PASSWORD) in the Render dashboard, not here.
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        fromService:
+          type: web
+          name: qr-employee
+          property: host
+          prefix: "https://"
+
+      # Laravel session — use database driver (sessions table is already migrated)
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: FILESYSTEM_DISK
+        value: public
+      - key: LOG_CHANNEL
+        value: stderr
+
+      # ── Database — fill in after creating a MySQL service on Render ────────
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        sync: false       # set manually in dashboard
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_DATABASE
+        sync: false       # set manually in dashboard
+      - key: DB_USERNAME
+        sync: false       # set manually in dashboard
+      - key: DB_PASSWORD
+        sync: false       # set manually in dashboard
+
+      # ── Secrets — set in Render dashboard ──────────────────────────────────
+      - key: APP_KEY
+        sync: false       # generate with: php artisan key:generate --show
