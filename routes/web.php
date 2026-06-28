@@ -14,15 +14,13 @@ Route::get('/profile/{uuid}', [ScanController::class, 'profile'])->name('profile
 
 // ─── Admin routes (auth required) ───────────────────────────────────────────
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', fn() => redirect()->route('admin.users.index'))->name('home');
     Route::get('/dashboard', fn() => redirect()->route('admin.users.index'))->name('dashboard');
     Route::resource('users', UserController::class)->parameters(['users' => 'user_profile']);
 });
 
 // Breeze default dashboard redirect
 Route::get('/dashboard', fn() => redirect()->route('admin.users.index'))
-    ->middleware(['auth'])
-    ->name('dashboard');
-Route::get('/admin', fn() => redirect()->route('admin.users.index'))
     ->middleware(['auth'])
     ->name('dashboard');
 
