@@ -24,12 +24,13 @@ class DashboardController extends Controller
 
         $mostScanned = UserProfile::withCount('scans')
             ->orderByDesc('scans_count')
-            ->first();
+            ->limit(10)
+            ->get();
 
         $mostUsedDevice = QrScan::select('device', DB::raw('count(*) as total'))
             ->groupBy('device')
             ->orderByDesc('total')
-            ->first();
+            ->get();
 
         $recentScans = QrScan::with(['user', 'user.profileImage'])
             ->orderByDesc('scanned_at')
@@ -52,7 +53,7 @@ class DashboardController extends Controller
 
     private function chartData(): array
     {
-        $days = collect(range(29, 0))->map(fn ($d) => now()->subDays($d)->toDateString());
+        $days = collect(range(29, 0))->map(fn($d) => now()->subDays($d)->toDateString());
 
         $scans = QrScan::selectRaw('DATE(scanned_at) as date, COUNT(*) as total')
             ->where('scanned_at', '>=', now()->subDays(29)->startOfDay())
@@ -60,8 +61,8 @@ class DashboardController extends Controller
             ->pluck('total', 'date');
 
         return [
-            'labels' => $days->map(fn ($d) => \Carbon\Carbon::parse($d)->format('M d'))->values()->all(),
-            'values' => $days->map(fn ($d) => (int) ($scans[$d] ?? 0))->values()->all(),
+            'labels' => $days->map(fn($d) => \Carbon\Carbon::parse($d)->format('M d'))->values()->all(),
+            'values' => $days->map(fn($d) => (int) ($scans[$d] ?? 0))->values()->all(),
         ];
     }
 }
