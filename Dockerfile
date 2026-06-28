@@ -72,7 +72,7 @@ COPY --from=node-builder /app/public/build ./public/build
 RUN mkdir -p /etc/supervisor/conf.d /etc/nginx/conf.d /var/log/nginx /run/nginx
 
 # Copy Docker config files
-COPY docker/nginx.conf       /etc/nginx/conf.d/app.conf.template
+COPY docker/nginx.conf       /etc/nginx/nginx.conf.template
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/php.ini          /usr/local/etc/php/conf.d/99-custom.ini
 COPY docker/entrypoint.sh    /entrypoint.sh

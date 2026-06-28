@@ -8,8 +8,8 @@ export PORT="${PORT:-8080}"
 echo "[entrypoint] Starting on port $PORT"
 
 # ─── Generate Nginx config with correct port ─────────────────────────────────
-envsubst '${PORT}' < /etc/nginx/conf.d/app.conf.template \
-    > /etc/nginx/conf.d/default.conf
+envsubst '${PORT}' < /etc/nginx/nginx.conf.template \
+    > /etc/nginx/nginx.conf
 
 # ─── Wait for the database ───────────────────────────────────────────────────
 echo "[entrypoint] Waiting for database..."
