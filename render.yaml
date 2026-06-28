@@ -39,13 +39,13 @@ services:
       - key: LOG_CHANNEL
         value: stderr
 
-      # ── Database — fill in after creating a MySQL service on Render ────────
+      # ── Database — Render PostgreSQL ─────────────────────────────────────────
       - key: DB_CONNECTION
-        value: mysql
+        value: pgsql
       - key: DB_HOST
-        sync: false       # set manually in dashboard
+        sync: false       # set manually in dashboard (from Render PostgreSQL service)
       - key: DB_PORT
-        value: "3306"
+        value: "5432"
       - key: DB_DATABASE
         sync: false       # set manually in dashboard
       - key: DB_USERNAME

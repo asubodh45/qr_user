@@ -23,7 +23,7 @@ until php -r "
     \$u = getenv('DB_USERNAME') ?: '';
     \$pw = getenv('DB_PASSWORD') ?: '';
     try {
-        new PDO(\"mysql:host=\$h;port=\$p;dbname=\$d\", \$u, \$pw);
+        new PDO(\"pgsql:host=\$h;port=\$p;dbname=\$d\", \$u, \$pw);
         exit(0);
     } catch (Exception \$e) {
         exit(1);

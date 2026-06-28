@@ -30,13 +30,15 @@ RUN apk add --no-cache \
     libzip-dev \
     icu-dev \
     oniguruma-dev \
+    postgresql-dev \
     && rm -rf /var/cache/apk/*
 
 # PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         pdo \
-        pdo_mysql \
+        pdo_pgsql \
+        pgsql \
         gd \
         mbstring \
         zip \
