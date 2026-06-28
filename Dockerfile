@@ -76,6 +76,7 @@ RUN mkdir -p /etc/supervisor/conf.d /etc/nginx/conf.d /var/log/nginx /run/nginx
 COPY docker/nginx.conf       /etc/nginx/nginx.conf.template
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/php.ini          /usr/local/etc/php/conf.d/99-custom.ini
+COPY docker/www-pool.conf    /usr/local/etc/php-fpm.d/zzz-www-pool.conf
 COPY docker/entrypoint.sh    /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh

@@ -50,8 +50,8 @@ echo "[entrypoint] Migrations complete."
 php artisan storage:link --force 2>/dev/null || true
 echo "[entrypoint] Storage link ready."
 
-# Warm Laravel caches for production performance
-php artisan config:cache
+# Route and view caches are safe (no env var dependency)
+# config:cache is intentionally skipped — PHP-FPM reads env vars directly via clear_env=no
 php artisan route:cache
 php artisan view:cache
 echo "[entrypoint] Caches warmed."
