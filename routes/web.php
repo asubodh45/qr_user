@@ -4,11 +4,11 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ScanController;
 use Illuminate\Support\Facades\Route;
 
-// Root redirect to login
-Route::get('/', fn () => redirect()->route('login'));
+// Root → scanner (public entry point)
+Route::get('/', fn () => redirect()->route('scanner'));
 
 // ─── Public QR routes (no auth required) ────────────────────────────────────
-Route::get('/scanner', [ScanController::class, 'scanner'])->name('scanner');
+Route::get('/scan', [ScanController::class, 'scanner'])->name('scanner');
 Route::get('/scan/{uuid}', [ScanController::class, 'scan'])->name('scan');
 Route::get('/profile/{uuid}', [ScanController::class, 'profile'])->name('profile.show');
 
