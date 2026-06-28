@@ -31,6 +31,7 @@ RUN apk add --no-cache \
     icu-dev \
     oniguruma-dev \
     postgresql-dev \
+    netcat-openbsd \
     && rm -rf /var/cache/apk/*
 
 # PHP extensions
