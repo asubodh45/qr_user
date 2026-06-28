@@ -87,9 +87,8 @@ class ScanController extends Controller
             if ($geo['country'] !== 'Unknown') {
                 $scan->update(['country' => $geo['country'], 'city' => $geo['city']]);
             }
-
         } catch (\Throwable $e) {
-            logger()->error('QR scan log failed: '.$e->getMessage());
+            logger()->error('QR scan log failed: ' . $e->getMessage());
         }
     }
 
@@ -97,21 +96,23 @@ class ScanController extends Controller
     {
         $unknown = ['country' => 'Unknown', 'city' => 'Unknown'];
 
-        // Private / loopback addresses cannot be geolocated
         if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
             return $unknown;
         }
 
         try {
-            $response = Http::timeout(2)->get("http://ip-api.com/json/{$ip}");
+            // Use HTTPS — ip-api.com HTTP is often blocked on cloud hosts
+            $response = Http::timeout(3)->get("https://freeipapi.com/api/json/{$ip}");
 
-            if ($response->successful() && $response->json('status') === 'success') {
+            if ($response->successful()) {
                 return [
-                    'country' => $response->json('country') ?: 'Unknown',
-                    'city'    => $response->json('city') ?: 'Unknown',
+                    'country' => $response->json('countryName') ?: 'Unknown',
+                    'city'    => $response->json('cityName') ?: 'Unknown',
                 ];
             }
-        } catch (\Throwable) {}
+        } catch (\Throwable $e) {
+            logger()->warning('Geo lookup failed: ' . $e->getMessage());  // log it, don't swallow silently
+        }
 
         return $unknown;
     }
