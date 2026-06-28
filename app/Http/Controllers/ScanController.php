@@ -63,6 +63,13 @@ class ScanController extends Controller
 
             $ip = $request->ip();
 
+            logger()->info('QR_DEBUG', [
+                'ip()'            => $ip,
+                'REMOTE_ADDR'     => $request->server('REMOTE_ADDR'),
+                'x-forwarded-for' => $request->header('x-forwarded-for'),
+                'x-real-ip'       => $request->header('x-real-ip'),
+            ]);
+
             // Insert immediately so the redirect is fast, then update geo in the background
             $scan = QrScan::create([
                 'user_profile_id'  => $profile->id,
